@@ -1,0 +1,64 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+
+Parameters:
+  Name:
+    Type: String
+
+  Architecture:
+    Type: String
+    AllowedValues:
+      - X86_64
+      - ARM64
+      - ARMHF
+    Default: ARMHF
+
+  RosVersion:
+    Type: String
+    AllowedValues:
+      - ROS
+      - ROS2
+    Default: ROS
+
+  RosRevision:
+    Type: String
+    AllowedValues:
+      - Dashing
+      - Kinetic
+      - Melodic
+    Default: Melodic
+
+  RosBundleBucketName:
+    Type: String
+
+  RosBundleKeyPrefix:
+    Type: String
+    Default: CloudWatch/output.tar
+
+
+Resources:
+  RobotApplication:
+    Type: AWS::RoboMaker::RobotApplication
+    Properties:
+      Name: !Ref Name
+      Sources:
+        - S3Bucket: !Ref RosBundleBucketName
+          S3Key: !Ref RosBundleKeyPrefix
+          Architecture: !Ref Architecture
+      RobotSoftwareSuite:
+        Name: !Ref RosVersion
+        Version: !Ref RosRevision
+
+  RobotApplicationVersion:
+    Type: AWS::RoboMaker::RobotApplicationVersion
+    Properties:
+      Application: !GetAtt RobotApplication.Arn
+      CurrentRevisionId: !GetAtt RobotApplication.CurrentRevisionId
+
+
+Outputs:
+  RobotApplication:
+    Value: !Ref RobotApplication
+
+  RobotApplicationVersion:
+    Value: !Ref RobotApplicationVersion

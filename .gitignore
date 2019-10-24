@@ -1,0 +1,6 @@
+.vscode/
+aws/certs/
+aws/config/
+aws/*-setup.tar.gz
+greengrass-*.tar.gz
+aws/deployment.json

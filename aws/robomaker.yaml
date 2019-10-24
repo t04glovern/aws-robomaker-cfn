@@ -1,0 +1,48 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: Create resources for a RoboMaker deployment to Greengrass
+
+Parameters:
+  RobotName:
+    Description: RoboMaker Robot Name
+    Type: String
+    Default: PiBot
+
+  RobotArchitecture:
+    Type: String
+    AllowedValues:
+      - X86_64
+      - ARM64
+      - ARMHF
+    Default: ARMHF
+
+  GreengrassGroupId:
+    Type: String
+
+  FleetName:
+    Description: RoboMaker Fleet Name
+    Type: String
+    Default: PiFleet
+
+Resources:
+  Fleet:
+    Type: AWS::RoboMaker::Fleet
+    Properties:
+      Name: !Ref FleetName
+
+  Robot:
+    Type: AWS::RoboMaker::Robot
+    Properties:
+      Fleet: !Ref Fleet
+      Name: !Ref RobotName
+      Architecture: !Ref RobotArchitecture
+      GreengrassGroupId: !Ref GreengrassGroupId
+
+  RobotAppBucket:
+    Type: AWS::S3::Bucket
+
+Outputs:
+  RobotAppBucket:
+    Value: !Ref RobotAppBucket
+  RoboMakerFleet:
+    Value: !Ref Fleet
