@@ -123,8 +123,13 @@ rosdep install --from-paths src --ignore-src -r -y
 # These steps will take a while
 colcon build --build-base armhf_build --install-base armhf_install
 colcon bundle --build-base armhf_build --install-base armhf_install --bundle-base armhf_bundle --apt-sources-list /opt/cross/apt-sources.yaml
+```
 
-# Exit container
+![RoboMaker Cloud9 colcon build and bundle](img/robomaker-cloud9-deployment-01.png)
+
+Finally, exit the container after the bundle is successful
+
+```bash
 exit
 ```
 
@@ -133,15 +138,23 @@ exit
 Copy the bundle to our S3 bucket using the following command
 
 ```bash
-aws s3 cp bundle/output.tar s3://BUCKET_NAME/cloudwatch_robot/output.tar
+aws s3 cp armhf_bundle/output.tar s3://BUCKET_NAME/cloudwatch_robot/output.tar
 ```
 
 ## RoboMaker App Deploy
 
 ```bash
 cd aws
-robomaker-app.sh
+./robomaker-app.sh
 ```
+
+The status of the deployment can be viewed in the RoboMaker deployment console
+
+![RoboMaker Deployment status](img/robomaker-deployment-status-01.png)
+
+Once the deployment is successful you should start to see CloudWatch logs coming through (in us-west-2 by default)
+
+![RoboMaker Deployment CloudWatch logs](img/robomaker-cloudwatch-logs-01.png)
 
 ## Cleanup
 
