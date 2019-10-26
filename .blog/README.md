@@ -66,9 +66,9 @@ Navigate to the developer [IDE section in AWS RoboMaker](https://console.aws.ama
 
 ![Cloud9 RoboMaker Environment](img/robomaker-environment-01.png)
 
-Once the environment starts up we're just going to open an example project by clicking "Hello World". You will begin to see a download occuring pulling down the sample project; and once complete you will be presented with a `README`.
+Once the environment starts up we're just going to open an example project by clicking "Robot Monitoring". You will begin to see a download occuring pulling down the sample project; and once complete you will be presented with a `README`.
 
-![Cloud9 RoboMaker Environment Hello World Project](img/robomaker-environment-02.png)
+![Cloud9 RoboMaker Environment CloudWatch Project](img/robomaker-environment-02.png)
 
 ```bash
 sudo apt-get update
@@ -77,10 +77,12 @@ rosdep update
 
 ### Build & Bundle
 
-To build and bundle up the sample repository, you can follow the commands listed in the `README` provided. Alternatively just run the following.
+#### x86_64
+
+Building and bundling for x86_64 is really easy since we're already on an x86_64 system architecture.
 
 ```bash
-cd ~/environment/HelloWorld/robot_ws
+cd ~/environment/CloudWatch/robot_ws
 rosws update
 rosdep install --from-paths src --ignore-src -r -y
 colcon build
@@ -89,15 +91,49 @@ colcon build
 We will use Colcon to build and bundle our robot application
 
 ```bash
-cd ~/environment/HelloWorld/robot_ws
+cd ~/environment/CloudWatch/robot_ws
 source install/local_setup.sh
 colcon bundle
 ```
 
+#### armhf
+
+Since we're trying to build for the Raspberry Pi we need to make sure we're cross compiling for `armhf`. Start off by building the cross-compile docker image (this step will take a while)
+
+```bash
+cd /opt/robomaker/cross-compilation-dockerfile/
+sudo bin/build_image.bash
+```
+
+Connect to the `ros-cross-compile` container
+
+```bash
+cd ~/environment/CloudWatch/robot_ws
+sudo docker run -v $(pwd):/ws -it ros-cross-compile:armhf
+```
+
+Now you're inside the cross-compilation docker container. Run the following commands to build the workspace
+
+```bash
+# build the workspace
+cd ws
+apt update
+rosdep install --from-paths src --ignore-src -r -y
+
+# These steps will take a while
+colcon build --build-base armhf_build --install-base armhf_install
+colcon bundle --build-base armhf_build --install-base armhf_install --bundle-base armhf_bundle --apt-sources-list /opt/cross/apt-sources.yaml
+
+# Exit container
+exit
+```
+
+### Copy Bundle to S3
+
 Copy the bundle to our S3 bucket using the following command
 
 ```bash
-aws s3 cp bundle/output.tar s3://BUCKET_NAME/hello_world_robot/output.tar
+aws s3 cp bundle/output.tar s3://BUCKET_NAME/cloudwatch_robot/output.tar
 ```
 
 ## RoboMaker App Deploy
@@ -106,3 +142,9 @@ aws s3 cp bundle/output.tar s3://BUCKET_NAME/hello_world_robot/output.tar
 cd aws
 robomaker-app.sh
 ```
+
+## Cleanup
+
+Before walking away from the project, make sure to remove the things we setup (esspecially the Cloud9 Environment). This can be done from the [RoboMaker Environments section of the portal](https://console.aws.amazon.com/robomaker/home?region=us-east-1#ides)
+
+![Cloud9 Remove Environment](img/robomaker-environment-03.png)

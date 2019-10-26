@@ -33,7 +33,7 @@ Parameters:
 
   RosBundleKeyPrefix:
     Type: String
-    Default: HelloWorld/output.tar
+    Default: hello_world_robot/output.tar
 
 
 Resources:

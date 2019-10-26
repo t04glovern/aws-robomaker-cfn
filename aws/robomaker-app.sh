@@ -1,8 +1,9 @@
 #!/bin/bash
 
 AWS_REGION="us-east-1"
-ROBOT_APP="hello_world_robot"
-ROBOT_LAUNCH_FILE="rotate.launch"
+ROBOT_APP="cloudwatch_robot"
+ROBOT_APP_KEY="${ROBOT_APP}/output.tar"
+ROBOT_LAUNCH_FILE="deploy_rotate.launch"
 
 robotBucketName=$(aws cloudformation describe-stacks \
     --stack-name devopstar-rpi-robot \
@@ -11,16 +12,17 @@ robotBucketName=$(aws cloudformation describe-stacks \
     --output text)
 
 aws cloudformation create-stack \
-    --stack-name "devopstar-rpi-robot-app-helloworld" \
+    --stack-name "devopstar-rpi-robot-app-cloudwatch" \
     --template-body file://robomaker-app.yaml \
     --parameters \
         ParameterKey=Name,ParameterValue=${ROBOT_APP} \
+        ParameterKey=RosBundleKeyPrefix,ParameterValue=${ROBOT_APP_KEY} \
         ParameterKey=RosBundleBucketName,ParameterValue=${robotBucketName} \
     --region ${AWS_REGION}
 
 aws cloudformation wait stack-create-complete \
     --region ${AWS_REGION} \
-    --stack-name "devopstar-rpi-robot-app-helloworld"
+    --stack-name "devopstar-rpi-robot-app-cloudwatch"
 
 fleetArn=$(aws cloudformation describe-stacks \
     --stack-name devopstar-rpi-robot \
@@ -28,12 +30,12 @@ fleetArn=$(aws cloudformation describe-stacks \
     --region ${AWS_REGION} \
     --output text)
 applicationArn=$(aws cloudformation describe-stacks \
-    --stack-name devopstar-rpi-robot-app-helloworld \
+    --stack-name devopstar-rpi-robot-app-cloudwatch \
     --query 'Stacks[0].Outputs[?OutputKey==`RobotApplication`].OutputValue' \
     --region ${AWS_REGION} \
     --output text)
 applicationVersion=$(aws cloudformation describe-stacks \
-    --stack-name devopstar-rpi-robot-app-helloworld \
+    --stack-name devopstar-rpi-robot-app-cloudwatch \
     --query 'Stacks[0].Outputs[?OutputKey==`RobotApplicationVersion`].OutputValue' \
     --region ${AWS_REGION} \
     --output text)
