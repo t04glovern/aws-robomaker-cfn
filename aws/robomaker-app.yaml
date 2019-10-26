@@ -33,7 +33,7 @@ Parameters:
 
   RosBundleKeyPrefix:
     Type: String
-    Default: CloudWatch/output.tar
+    Default: HelloWorld/output.tar
 
 
 Resources:

@@ -1,7 +1,8 @@
 #!/bin/bash
 
 AWS_REGION="us-east-1"
-ROBOT_APP="CloudWatch"
+ROBOT_APP="hello_world_robot"
+ROBOT_LAUNCH_FILE="rotate.launch"
 
 robotBucketName=$(aws cloudformation describe-stacks \
     --stack-name devopstar-rpi-robot \
@@ -10,8 +11,8 @@ robotBucketName=$(aws cloudformation describe-stacks \
     --output text)
 
 aws cloudformation create-stack \
-    --stack-name "devopstar-rpi-robot-app-cloudwatch" \
-    --template-body file://robo-app.yaml \
+    --stack-name "devopstar-rpi-robot-app-helloworld" \
+    --template-body file://robomaker-app.yaml \
     --parameters \
         ParameterKey=Name,ParameterValue=${ROBOT_APP} \
         ParameterKey=RosBundleBucketName,ParameterValue=${robotBucketName} \
@@ -19,7 +20,7 @@ aws cloudformation create-stack \
 
 aws cloudformation wait stack-create-complete \
     --region ${AWS_REGION} \
-    --stack-name "devopstar-rpi-robot-app-cloudwatch"
+    --stack-name "devopstar-rpi-robot-app-helloworld"
 
 fleetArn=$(aws cloudformation describe-stacks \
     --stack-name devopstar-rpi-robot \
@@ -27,12 +28,12 @@ fleetArn=$(aws cloudformation describe-stacks \
     --region ${AWS_REGION} \
     --output text)
 applicationArn=$(aws cloudformation describe-stacks \
-    --stack-name devopstar-rpi-robot-app-cloudwatch \
+    --stack-name devopstar-rpi-robot-app-helloworld \
     --query 'Stacks[0].Outputs[?OutputKey==`RobotApplication`].OutputValue' \
     --region ${AWS_REGION} \
     --output text)
 applicationVersion=$(aws cloudformation describe-stacks \
-    --stack-name devopstar-rpi-robot-app-cloudwatch \
+    --stack-name devopstar-rpi-robot-app-helloworld \
     --query 'Stacks[0].Outputs[?OutputKey==`RobotApplicationVersion`].OutputValue' \
     --region ${AWS_REGION} \
     --output text)
@@ -47,7 +48,7 @@ cat <<EOT > deployment.json
             "applicationVersion": "${applicationVersion: -1}",
             "launchConfig": {
                 "packageName": "${ROBOT_APP}",
-                "launchFile": "await_commands.launch"
+                "launchFile": "${ROBOT_LAUNCH_FILE}"
             }
         }
     ]
