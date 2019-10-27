@@ -4,6 +4,10 @@ In the previous post [AWS IoT Greengrass CloudFormation – Raspberry Pi](https:
 
 With this in place we can begin to look at what we might be able to do with a Robot Fleet using another AWS service, AWS RoboMaker.
 
+![AWS RoboMaker Deployment Architecture](img/robomaker-architecture.png)
+
+In this guide we'll be looking at how to build and bundle ROS applications specifically for the Raspberry Pi ARMHF architecture using Cloud9. The final goal is to have the bundled application deployed over AWS RoboMaker.
+
 ## Prerequisites
 
 * AWS Account with [AWS CLI Setup](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html)
@@ -43,9 +47,50 @@ The first step will be to create a brand new robot through RoboMaker. This proce
 * RoboMaker Fleet Create
 * RoboMaker Robot Create
 * RoboMaker Application Create
-* RobotMaker Deployment Create
+* RoboMaker Deployment Create
 
-Luckily we're able to use CloudFormation for a good portion of this deployment currently.
+Luckily we're able to use CloudFormation for a good portion of this deployment currently. The only exception is the deployment phase which must be done using AWS CLI commands for now.
+
+Have a look at the script we're about to run called `robomaker.sh`. It's responsibility it just to pull down the existing Greengrass group ID from the previously created Greengrass stack (called devopstar-rpi-gg-core) in my case.
+
+```bash
+greengrassGroupId=$(aws cloudformation describe-stacks \
+    --stack-name devopstar-rpi-gg-core \
+    --query 'Stacks[0].Outputs[?OutputKey==`GreengrassGroupId`].OutputValue' \
+    --region ${AWS_REGION} \
+    --output text)
+```
+
+Using this Greengrass ID, we're able to setup a RoboMaker Fleet & Robot. by calling a CloudFormation template `aws/robomaker.yaml` that I've prepared earlier.
+
+**NOTE**: *There are a variety of other settings that can be overriden for the robot deployment. This includes the architecture type of the device. In our case it is a Raspberry Pi with arm7hf so ARMHF is selected, however your device might be something different.*
+
+```bash
+aws cloudformation create-stack \
+    --stack-name "devopstar-rpi-robot" \
+    --template-body file://robomaker.yaml \
+    --parameters \
+        ParameterKey=GreengrassGroupId,ParameterValue=${greengrassGroupId} \
+    --region ${AWS_REGION}
+
+aws cloudformation wait stack-create-complete \
+    --region ${AWS_REGION} \
+    --stack-name "devopstar-rpi-robot"
+```
+
+The final step in the script is to retrieve the name of the S3 bucket that is created for our RoboMaker deployments. This is the location where we'll be putting our deployment files and is available to our robots.
+
+```bash
+robotBucketName=$(aws cloudformation describe-stacks \
+    --stack-name devopstar-rpi-robot \
+    --query 'Stacks[0].Outputs[?OutputKey==`RobotAppBucket`].OutputValue' \
+    --region ${AWS_REGION} \
+    --output text)
+
+echo "Put robot deployment files in s3://${robotBucketName}"
+```
+
+To run all of the above steps in one hit, simply punch in the following commands.
 
 ```bash
 cd aws
@@ -141,6 +186,12 @@ Copy the bundle to our S3 bucket using the following command
 aws s3 cp armhf_bundle/output.tar s3://BUCKET_NAME/cloudwatch_robot/output.tar
 ```
 
+This will place the bundled `output.tar` in an S3 bucket location that will be used by RoboMaker during application deployments.
+
+![RoboMaker S3 Deployment of output.tar](img/robomaker-s3-deployment-01.png)
+
+**NOTE**: *In production it would be a better idea to store this output file in versioned prefix locations (eg. s3://BUCKET_NAME/cloudwatch_robot/v1/output.tar)*
+
 ## RoboMaker App Deploy
 
 ```bash
@@ -158,6 +209,29 @@ Once the deployment is successful you should start to see CloudWatch logs coming
 
 ## Cleanup
 
-Before walking away from the project, make sure to remove the things we setup (esspecially the Cloud9 Environment). This can be done from the [RoboMaker Environments section of the portal](https://console.aws.amazon.com/robomaker/home?region=us-east-1#ides)
+Before walking away from the project, make sure to remove the things we setup (esspecially the Cloud9 Environment).
+
+### Cloud9 Cleanup
+
+The Cloud9 environment can be removed from the [RoboMaker Environments section of the portal](https://console.aws.amazon.com/robomaker/home?region=us-east-1#ides)
 
 ![Cloud9 Remove Environment](img/robomaker-environment-03.png)
+
+### CloudFormation Stacks Cleanup
+
+The CloudFormation stacks can either be removed from the [CloudFormation console](https://console.aws.amazon.com/cloudformation/home?region=us-east-1) or via CLI commands like the following:
+
+```bash
+aws cloudformation delete-stack \
+    --stack-name "devopstar-rpi-robot-app-cloudwatch"
+
+aws cloudformation delete-stack \
+    --stack-name "devopstar-rpi-robot"
+
+aws cloudformation delete-stack \
+    --stack-name "devopstar-rpi-gg-core"
+```
+
+## Attribution
+
+* [Deploy Robot Application - Cross Compile Cloud9](https://docs.aws.amazon.com/robomaker/latest/dg/gs-deploy.html)
