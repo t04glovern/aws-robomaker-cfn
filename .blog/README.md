@@ -203,7 +203,9 @@ The status of the deployment can be viewed in the RoboMaker deployment console
 
 ![RoboMaker Deployment status](img/robomaker-deployment-status-01.png)
 
-Once the deployment is successful you should start to see CloudWatch logs coming through (in us-west-2 by default)
+Once the deployment is successful you should start to see CloudWatch logs coming through (in **us-west-2** by default).
+
+**NOTE**: *It's very likely you will see mostly errors since you aren't deploying to a TurtleBot3 (the default the CloudWatch demo repo was originally created for)*
 
 ![RoboMaker Deployment CloudWatch logs](img/robomaker-cloudwatch-logs-01.png)
 
