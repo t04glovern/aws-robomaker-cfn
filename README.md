@@ -4,6 +4,8 @@ In this guide we'll be looking at how to build and bundle ROS applications speci
 
 The final goal is to have the bundled application deployed over AWS RoboMaker.
 
+Blog Post files available [here](.blog/README.md)
+
 ## Architecture
 
 ![Architecture](img/architecture.png)

@@ -63,7 +63,7 @@ greengrassGroupId=$(aws cloudformation describe-stacks \
 
 Using this Greengrass ID, we're able to setup a RoboMaker Fleet & Robot. by calling a CloudFormation template `aws/robomaker.yaml` that I've prepared earlier.
 
-**NOTE**: *There are a variety of other settings that can be overriden for the robot deployment. This includes the architecture type of the device. In our case it is a Raspberry Pi with arm7hf so ARMHF is selected, however your device might be something different.*
+**NOTE**: *There are a variety of other settings that can be overridden for the robot deployment. This includes the architecture type of the device. In our case it is a Raspberry Pi with arm7hf so ARMHF is selected, however your device might be something different.*
 
 ```bash
 aws cloudformation create-stack \
@@ -97,7 +97,7 @@ cd aws
 ./robomaker.sh
 ```
 
-Then the deployment completes you'll be presented with a bucket that we will use in the next step to store our RoboMaker app
+Then the deployment completes you'll be presented with a bucket that we will use in the next step to store our RoboMaker app.
 
 ```bash
 # Put robot deployment files in s3://BUCKET_NAME
@@ -111,7 +111,7 @@ Navigate to the developer [IDE section in AWS RoboMaker](https://console.aws.ama
 
 ![Cloud9 RoboMaker Environment](img/robomaker-environment-01.png)
 
-Once the environment starts up we're just going to open an example project by clicking "Robot Monitoring". You will begin to see a download occuring pulling down the sample project; and once complete you will be presented with a `README`.
+Once the environment starts up we're just going to open an example project by clicking "Robot Monitoring". You will begin to see a download occurring pulling down the sample project; and once complete you will be presented with a `README`.
 
 ![Cloud9 RoboMaker Environment CloudWatch Project](img/robomaker-environment-02.png)
 
@@ -199,7 +199,7 @@ cd aws
 ./robomaker-app.sh
 ```
 
-The status of the deployment can be viewed in the RoboMaker deployment console
+The status of the deployment can be viewed in the RoboMaker deployment console.
 
 ![RoboMaker Deployment status](img/robomaker-deployment-status-01.png)
 
@@ -211,11 +211,11 @@ Once the deployment is successful you should start to see CloudWatch logs coming
 
 ## Cleanup
 
-Before walking away from the project, make sure to remove the things we setup (esspecially the Cloud9 Environment).
+Before walking away from the project, make sure to remove the things we setup (especially the Cloud9 Environment).
 
 ### Cloud9 Cleanup
 
-The Cloud9 environment can be removed from the [RoboMaker Environments section of the portal](https://console.aws.amazon.com/robomaker/home?region=us-east-1#ides)
+The Cloud9 environment can be removed from the [RoboMaker Environments section of the portal](https://console.aws.amazon.com/robomaker/home?region=us-east-1#ides).
 
 ![Cloud9 Remove Environment](img/robomaker-environment-03.png)
 
